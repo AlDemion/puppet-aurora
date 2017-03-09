@@ -13,7 +13,6 @@
 class aurora::executor (
   $observer_port = $aurora::observer_port,
 ){
-include aurora::repo
   $aurora_ensure = $aurora::version? {
     undef    => 'absent',
     default => $aurora::version,
@@ -21,10 +20,9 @@ include aurora::repo
 
   package { 'aurora-executor':
     ensure  => $aurora_ensure,
-    require => Class['aurora::repo'],
   }
 
-  file { '/etc/sysconfig/thermos':
+  file { '/etc/default/thermos':
     ensure  => present,
     content => template('aurora/thermos.erb'),
     mode    => '0644',

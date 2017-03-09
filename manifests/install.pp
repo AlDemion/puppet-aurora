@@ -12,7 +12,6 @@
 
 class aurora::install(
 ){
-  include aurora::repo
 
   #lint:ignore:only_variable_string
   case str2bool("${aurora::master}") {

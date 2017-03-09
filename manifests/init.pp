@@ -16,12 +16,9 @@ class aurora (
   $master = false,
   $owner = 'aurora',
   $group = 'aurora',
-  $configure_repo = false,
-  $repo_url = 'http://www.apache.org/dist/aurora/',
-  $repo_key = undef,
   $observer_port = 1338,
+  $mesos_root = '/var/lib/mesos',
   $scheduler_options = {
-    'log_level'                  => 'INFO',
     'libmesos_log_verbosity'     => 0,
     'libprocess_port'            => '8083',
     'libprocess_ip'              => '127.0.0.1',
@@ -29,7 +26,7 @@ class aurora (
                                     # Uses server-level GC optimizations, as this is a server.
                                     '-server',
                                     # Location of libmesos-XXXX.so / libmesos-XXXX.dylib
-                                    "-Djava.library.path='/usr/lib;/usr/lib64'",
+                                    "-Djava.library.path='/usr/local/lib;/usr/lib;/usr/lib64'",
                                   ],
     'cluster_name'               => 'mesos',
     'http_port'                  => '8081',
@@ -38,7 +35,8 @@ class aurora (
     'zookeeper_mesos_path'       => 'mesos',
     'zookeeper_aurora_path'      => 'aurora',
     'aurora_home'                => '/var/lib/aurora',
-    'thermos_executor_path'      => '/usr/bin/thermos_executor',
+    'thermos_executor_path'      => '/usr/share/aurora/bin/thermos_executor.pex',
+    'thermos_executor_resources' => [],
     'thermos_executor_flags'     => [
                                     '--announcer-enable',
                                     '--announcer-ensemble 127.0.0.1:2181',
@@ -48,9 +46,6 @@ class aurora (
   }
 ) {
   if $scheduler_options {
-    if $scheduler_options['log_level'] {
-      validate_string($scheduler_options['log_level'])
-    }
     if $scheduler_options['libmesos_log_verbosity'] {
       validate_string($scheduler_options['libmesos_log_verbosity'])
     }
@@ -90,6 +85,9 @@ class aurora (
     if $scheduler_options['thermos_executor_flags'] {
       validate_array($scheduler_options['thermos_executor_flags'])
     }
+    if $scheduler_options['thermos_executor_resources'] {
+      validate_array($scheduler_options['thermos_executor_resources'])
+    }
     if $scheduler_options['allowed_container_types'] {
       validate_array($scheduler_options['allowed_container_types'])
     }
@@ -100,15 +98,11 @@ class aurora (
 
   validate_string($owner)
   validate_string($group)
-  validate_string($repo_key)
-  validate_string($repo_url)
   validate_integer($observer_port)
 
-  contain aurora::repo
   contain aurora::install
   contain aurora::service
 
-  Class['aurora::repo'] ->
   Class['aurora::install'] ->
   Class['aurora::service']
 }

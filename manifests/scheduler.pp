@@ -20,12 +20,10 @@ class aurora::scheduler (
 
   package { 'aurora-scheduler':
     ensure  => $aurora_ensure,
-    require => Class['aurora::repo'],
   }
 
   package { 'aurora-tools':
     ensure  => $aurora_ensure,
-    require => Class['aurora::repo'],
   }
 
   file { '/var/lib/aurora/scheduler':
@@ -47,7 +45,7 @@ class aurora::scheduler (
     ]
   }
 
-  file { '/etc/sysconfig/aurora-scheduler':
+  file { '/etc/default/aurora-scheduler':
     ensure  => present,
     content => template('aurora/aurora-scheduler.erb'),
     owner   => $aurora::owner,
@@ -60,7 +58,7 @@ class aurora::scheduler (
   exec { 'init-mesos-log':
     command => '/usr/bin/mesos-log initialize --path=/var/lib/aurora/scheduler/db && /bin/chown aurora:aurora /var/lib/aurora/scheduler/db/*',
     unless  => '/usr/bin/test -f /var/lib/aurora/scheduler/db/CURRENT',
-    require => Package['aurora-scheduler'],
+    require => [Package['aurora-scheduler'], File['/var/lib/aurora/scheduler/db']],
     notify  => Service['aurora-scheduler'],
   }
 }

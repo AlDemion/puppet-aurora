@@ -11,15 +11,6 @@
 # limitations under the License.
 
 class aurora::service {
-  case $::operatingsystem {
-    'Ubuntu': {
-      $provider = 'upstart'
-    }
-    default: {
-      $provider = undef
-    }
-  }
-
   #lint:ignore:only_variable_string
   if str2bool("${aurora::master}") {
     service { 'aurora-scheduler':
@@ -28,7 +19,6 @@ class aurora::service {
       hasstatus  => true,
       hasrestart => true,
       require    => Package['aurora-scheduler'],
-      provider   => $provider,
     }
   }
   #lint:endignore
@@ -38,13 +28,12 @@ class aurora::service {
       hasstatus  => true,
       hasrestart => true,
       enable     => $aurora::enable,
-      provider   => $provider,
       require    => [
         Package['aurora-executor'],
-        File['/etc/sysconfig/thermos'],
+        File['/etc/default/thermos'],
       ],
       subscribe  => [
-        File['/etc/sysconfig/thermos'],
+        File['/etc/default/thermos'],
       ],
     }
   }
